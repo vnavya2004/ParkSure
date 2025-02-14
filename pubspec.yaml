@@ -24,6 +24,7 @@ dependencies:
   fluttertoast: ^8.2.1
   carousel_slider: ^5.0.0
   twilio_flutter: ^0.9.0 # Add the latest version or compatible one
+  geocoding: ^3.0.0
 
 dev_dependencies:
   flutter_test:

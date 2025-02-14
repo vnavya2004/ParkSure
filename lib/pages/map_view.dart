@@ -353,6 +353,204 @@
 // }
 
 
+// import 'package:flutter/material.dart';
+// import 'package:geolocator/geolocator.dart';
+// import 'package:google_maps_flutter/google_maps_flutter.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:geocoding/geocoding.dart';
+
+// class MapView extends StatefulWidget {
+//   @override
+//   _MapViewState createState() => _MapViewState();
+// }
+
+// class _MapViewState extends State<MapView> {
+//   final CameraPosition _initialLocation =
+//       CameraPosition(target: LatLng(20.5937, 78.9629), zoom: 5);
+//   late GoogleMapController mapController;
+//   late Position _currentPosition;
+//   final myController = TextEditingController();
+//   bool _showClearButton = false;
+//   Set<Marker> markers = {};
+//   late BitmapDescriptor _mapMarker;
+//   late BuildContext mContext;
+//   FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     customMarker();
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: Text("Map View")),
+//       body: GoogleMap(
+//         initialCameraPosition: _initialLocation,
+//         markers: markers,
+//         onMapCreated: (GoogleMapController controller) {
+//           mapController = controller;
+//         },
+//       ),
+//     );
+//   }
+
+//   @override
+//   void dispose() {
+//     myController.dispose();
+//     super.dispose();
+//   }
+
+//   void customMarker() async {
+//     _mapMarker = await BitmapDescriptor.fromAssetImage(
+//         ImageConfiguration(), 'assets/images/parkmeIcon.png');
+//   }
+
+//   void closeModal() {
+//     Navigator.pop(mContext);
+//   }
+
+//   void addMarkers() async {
+//     await firestore.collection('parkingCenters').get().then((QuerySnapshot querySnapshot) {
+//       for (var spot in querySnapshot.docs) {
+//         _getCoordinatesFromAddress(spot['address']).then((LatLng coordinates) {
+//           Marker destinationMarker = Marker(
+//             onTap: () {
+//               showModalBottomSheet<void>(
+//                 context: context,
+//                 builder: (BuildContext context) {
+//                   mContext = context;
+//                   return Container(
+//                     width: MediaQuery.of(context).size.width,
+//                     height: 250,
+//                     decoration: BoxDecoration(
+//                       borderRadius: BorderRadius.only(
+//                           topRight: Radius.circular(10),
+//                           topLeft: Radius.circular(10)),
+//                       color: Colors.white70,
+//                     ),
+//                     child: Padding(
+//                       padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+//                       child: Column(
+//                         children: <Widget>[
+//                           Row(
+//                             mainAxisAlignment: MainAxisAlignment.center,
+//                             children: [
+//                               Column(
+//                                 children: [
+//                                   Hero(
+//                                     tag: 'centerName',
+//                                     child: Text(
+//                                       spot['name'],
+//                                       style: TextStyle(
+//                                           fontWeight: FontWeight.bold,
+//                                           color: Colors.blue,
+//                                           fontSize: 20),
+//                                     ),
+//                                   ),
+//                                   Row(
+//                                     children: [
+//                                       Icon(Icons.location_on, size: 15),
+//                                       Text(spot['address']),
+//                                     ],
+//                                   ),
+//                                 ],
+//                               ),
+//                             ],
+//                           ),
+//                           IntrinsicHeight(
+//                             child: Padding(
+//                               padding: const EdgeInsets.symmetric(vertical: 16),
+//                               child: Row(
+//                                 mainAxisAlignment: MainAxisAlignment.center,
+//                                 children: [
+//                                   Column(
+//                                     crossAxisAlignment: CrossAxisAlignment.end,
+//                                     children: [
+//                                       Text(
+//                                         '\u{20B9} ${spot['costPerHour']}',
+//                                         style: TextStyle(
+//                                           color: Colors.black,
+//                                           fontWeight: FontWeight.bold,
+//                                           fontSize: 18,
+//                                         ),
+//                                       ),
+//                                       Text('per hour')
+//                                     ],
+//                                   ),
+//                                   VerticalDivider(thickness: 2, width: 20, color: Colors.black26),
+//                                   Column(
+//                                     crossAxisAlignment: CrossAxisAlignment.start,
+//                                     children: [
+//                                       Text(
+//                                         (spot['totalSpots'] - spot['occupiedSpots']).toString(),
+//                                         style: TextStyle(
+//                                           color: Colors.black,
+//                                           fontWeight: FontWeight.bold,
+//                                           fontSize: 18,
+//                                         ),
+//                                       ),
+//                                       Text('seats left')
+//                                     ],
+//                                   ),
+//                                 ],
+//                               ),
+//                             ),
+//                           ),
+//                           SizedBox(
+//                             width: MediaQuery.of(context).size.width,
+//                             child: ElevatedButton(
+//                               style: ElevatedButton.styleFrom(
+//                                 padding: EdgeInsets.all(10),
+//                                 backgroundColor: Colors.blue,
+//                                 shape: RoundedRectangleBorder(
+//                                   borderRadius: BorderRadius.circular(5.0),
+//                                 ),
+//                               ),
+//                               child: const Text(
+//                                 'RESERVE',
+//                                 style: TextStyle(color: Colors.white, fontSize: 18),
+//                                 textAlign: TextAlign.center,
+//                               ),
+//                               onPressed: () {
+//                                 // Implement reservation functionality here
+//                               },
+//                             ),
+//                           )
+//                         ],
+//                       ),
+//                     ),
+//                   );
+//                 },
+//               );
+//             },
+//             markerId: MarkerId(coordinates.toString()),
+//             position: coordinates,
+//             infoWindow: InfoWindow(title: spot['name']),
+//             icon: _mapMarker,
+//           );
+//           setState(() {
+//             markers.add(destinationMarker);
+//           });
+//         });
+//       }
+//     });
+//   }  
+
+//   Future<LatLng> _getCoordinatesFromAddress(String address) async {
+//     try {
+//       List<Location> locations = await locationFromAddress(address);
+//       if (locations.isNotEmpty) {
+//         return LatLng(locations[0].latitude, locations[0].longitude);
+//       }
+//     } catch (e) {
+//       print("Error getting location: $e");
+//     }
+//     return LatLng(0.0, 0.0); // Default fallback location
+//   }
+// }
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -380,18 +578,95 @@ class _MapViewState extends State<MapView> {
   void initState() {
     super.initState();
     customMarker();
+    _getCurrentLocation();
+    addMarkers();
+
+    // Listener for the search bar clear button
+    myController.addListener(() {
+      setState(() {
+        _showClearButton = myController.text.isNotEmpty;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Map View")),
-      body: GoogleMap(
-        initialCameraPosition: _initialLocation,
-        markers: markers,
-        onMapCreated: (GoogleMapController controller) {
-          mapController = controller;
-        },
+      body: Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition: _initialLocation,
+            markers: markers,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+            zoomGesturesEnabled: true,
+            zoomControlsEnabled: false,
+            onMapCreated: (GoogleMapController controller) {
+              mapController = controller;
+            },
+          ),
+          SafeArea(
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 10.0, bottom: 10.0),
+                child: ClipOval(
+                  child: Material(
+                    color: Colors.blue,
+                    child: InkWell(
+                      splashColor: Colors.lightBlue,
+                      child: SizedBox(
+                        width: 56,
+                        height: 56,
+                        child: Icon(Icons.my_location, color: Colors.white),
+                      ),
+                      onTap: () {
+                        _getCurrentLocation();
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              child: TextField(
+                controller: myController,
+                onSubmitted: (text) => _updateLocation(text),
+                style: TextStyle(fontSize: 18),
+                cursorColor: Colors.black,
+                decoration: InputDecoration(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 25, vertical: 18),
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: 'Search here',
+                  suffixIcon: _getClearButton(),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(width: 0, color: Colors.white),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(width: 0, color: Colors.white),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+              ),
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 20,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -498,26 +773,6 @@ class _MapViewState extends State<MapView> {
                               ),
                             ),
                           ),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                padding: EdgeInsets.all(10),
-                                backgroundColor: Colors.blue,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5.0),
-                                ),
-                              ),
-                              child: const Text(
-                                'RESERVE',
-                                style: TextStyle(color: Colors.white, fontSize: 18),
-                                textAlign: TextAlign.center,
-                              ),
-                              onPressed: () {
-                                // Implement reservation functionality here
-                              },
-                            ),
-                          )
                         ],
                       ),
                     ),
@@ -536,7 +791,7 @@ class _MapViewState extends State<MapView> {
         });
       }
     });
-  }  
+  }
 
   Future<LatLng> _getCoordinatesFromAddress(String address) async {
     try {
@@ -547,6 +802,45 @@ class _MapViewState extends State<MapView> {
     } catch (e) {
       print("Error getting location: $e");
     }
-    return LatLng(0.0, 0.0); // Default fallback location
+    return LatLng(0.0, 0.0);
+  }
+
+  void _getCurrentLocation() async {
+    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+        .then((Position position) {
+      setState(() {
+        _currentPosition = position;
+        mapController.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(position.latitude, position.longitude),
+              zoom: 15.0,
+            ),
+          ),
+        );
+      });
+    }).catchError((e) {
+      print(e);
+    });
+  }
+
+  void _updateLocation(String address) async {
+    LatLng destinationCoordinates = await _getCoordinatesFromAddress(address);
+    setState(() {
+      mapController.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: destinationCoordinates, zoom: 15.0),
+        ),
+      );
+    });
+  }
+
+  Widget? _getClearButton() {
+    return _showClearButton
+        ? IconButton(
+            onPressed: () => myController.clear(),
+            icon: Icon(Icons.clear),
+          )
+        : null;
   }
 }
